@@ -1,13 +1,21 @@
 apiVersion: batch/v1
 kind: Job
+metadata:
+  name: "{{ .Name }}"
 spec:
   template:
     spec:
+      restartPolicy: Never
       containers:
         - name: "{{ .Name }}"
-          image: { { .Image } }
+          image: "{{ .Image }}"
           env:
-            - name: TESTCONTAINERS_HOST_OVERRIDE
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
+            - name: TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE
+              value: /run/containerd/containerd.sock
+          volumeMounts:
+            - name: containerd-socket
+              mountPath: /run/containerd/containerd.sock
+      volumes:
+        - name: containerd-socket
+          hostPath:
+            path: /run/containerd/containerd.sock
